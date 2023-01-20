@@ -7,13 +7,13 @@ from py2neo import Node, Relationship, Graph, NodeMatcher, RelationshipMatcher
 class KG:
 
     def __init__(self):
-        self.graph = Graph('http://localhost:7474/', username='neo4j', password='kgneo4j')
-        self.dir_path='D:\Download\KGdata\wiki-covid-19.json'
+        self.graph = Graph('http://localhost:7474/', username='neo4j', password='*******')#连接neo4j
+        self.dir_path='D:\Download\KGdata\wiki-covid-19.json'#json文件位置
 
     def read_json(self):
         jsonfile = open(self.dir_path, 'r', encoding="utf-8")
         jsondata = json.load(jsonfile)
-        data=jsondata['@graph']
+        data=jsondata['@graph']#读取json文件信息
 
         class_value={}  # id与类名的映射
         subclass={}  # 类与父类的映射
@@ -24,20 +24,21 @@ class KG:
         resources_connection = {}  # 资源之间的相互连接  以dict(dict(list()))形式给出
 
         data_class=data[0:49]
-        for dataclass in data_class:
+        #向class_value和subclass输入内容
+        for dataclass in data_class:#
             class_value[dataclass['@id']]=dataclass['label']['@value']
             if 'subClassOf'in dataclass.keys():
                 subclass[dataclass['@id']]=dataclass['subClassOf']
         # print(class_value)
         # print(subclass)
 
-
+        # 向property_value输入内容
         data_property = data[49:139]
         for dataproperty in data_property:
             property_value[dataproperty['@id']]=dataproperty['label']['@value']
         # print(property_value)
 
-
+        #向resources_value、resource_type、resource_text、resource_connection输入内容
         data_resource = data[139:]
         for dataresource in data_resource:
             resources_value[dataresource['@id']]=dataresource['label']['@value']
@@ -63,7 +64,7 @@ class KG:
         # print(resources_value)
         return class_value,subclass,property_value,resources_value,resources_type,resources_text,resources_connection
 
-    def create_node(self,label,name):#自己写的
+    def create_node(self,label,name):#创建单个节点 并返回索引
         Nodetocreate = Node(label, name=name)
         self.graph.create(Nodetocreate)
 
@@ -82,8 +83,8 @@ class KG:
     #     print('exist')
     #     return None
 
-
     def get_All_Nodes(self,class_value,resources_value):
+        #创建所有class和resource节点，并返回索引字典
         class_nodes={}
         resource_nodes={}
         for classid in class_value.keys():
@@ -99,12 +100,12 @@ class KG:
 
         return class_nodes,resource_nodes
 
-    def make_connection(self,node1,property,node2):
+    def make_connection(self,node1,property,node2):#创建单条边
         relation = Relationship(node1,property,node2)
         self.graph.create(relation)
 
     def createKG(self):
-
+        #创建知识图谱
         class_value, subclass, property_value, resources_value, resources_type, resources_text, resources_connection=\
             self.read_json()
         class_nodes, resource_nodes=self.get_All_Nodes(class_value,resources_value) #获取所有节点  目前只取了少量数据
@@ -143,37 +144,6 @@ class KG:
                     resource_nodes[resourcesid].update({propertytext:textdict[p]})
             self.graph.push(resource_nodes[resourcesid])
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Nodes={}
-# a = Node('class',name='i')
-# Nodes['5']=copy.deepcopy(a)
-# Person2 = Node('人', name='何姜杉')
-# Person2['大哥'] = 20
-# graph.create(Person2)  # 创建结点
-# Person3 = Node('人', name='冯亮文')
-# graph.create(Person3)  # 创建结点
-# relation1 = Relationship(Person1,'的叠是',Person2)
-# graph.create(relation1)  # 创建关系
-#
-# relation2 = Relationship(Person1,'的叠是',Person3)
-# graph.create(relation2)  # 创建关系
 
 covidKG=KG()
 covidKG.createKG()
