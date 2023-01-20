@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 from py2neo import NodeMatcher,Graph
-graph = Graph('http://localhost:7474/', username='neo4j', password='kgneo4j')#连接neo4j
+graph = Graph('http://localhost:7474/', username='neo4j', password='*****')#连接neo4j
 #搜索范围
 type_list=['名称','发病部位','常见病因','治疗方法','临床表现','相关症状','预防措施','多发人群','就诊科室']
 while(1):
